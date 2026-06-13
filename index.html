@@ -302,18 +302,24 @@
         fileMimeType
       };
 
-      // --- CORS-safe submission via no-cors fetch ---
-      // We use no-cors so the browser doesn't block the request.
-      // The response will be opaque (unreadable), which is expected.
-      await fetch(SCRIPT_URL, {
+      // --- CORS-safe submission ---
+      // KEY FIX: Sending as text/plain avoids the CORS preflight that
+      // Google Apps Script cannot handle. JSON is embedded in the body
+      // and parsed on the Apps Script side via e.postData.contents.
+      console.log('📤 Sending payload to Google Apps Script...');
+      console.log('Payload (no file):', { ...payload, fileData: payload.fileData ? '[BASE64 DATA]' : '' });
+
+      const response = await fetch(SCRIPT_URL, {
         method : 'POST',
-        mode   : 'no-cors',          // ← prevents CORS preflight block
-        headers: { 'Content-Type': 'application/json' },
+        mode   : 'no-cors',       // opaque response — expected
+        headers: { 'Content-Type': 'text/plain' }, // ← avoids preflight!
         body   : JSON.stringify(payload)
       });
 
-      // Because the response is opaque we can't confirm server success,
-      // but the request has been sent. Advise user to verify in the Sheet.
+      // Response is opaque with no-cors, so we can't read it.
+      // If no error was thrown, the request reached Google's servers.
+      console.log('✅ Fetch completed (opaque response — this is normal with no-cors)');
+
       setResult('✅ Registration submitted! Please check the Google Sheet to confirm your entry was recorded.', 'success');
       document.getElementById('conferenceForm').reset();
 
