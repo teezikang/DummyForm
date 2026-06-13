@@ -1,103 +1,235 @@
-<form id="registrationForm">
-  <label for="paperID">Paper ID:</label><br>
-  <input type="text" id="paperID" required><br><br>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Conference Registration Test</title>
 
-  <label for="paperTitle">Paper Title:</label><br>
-  <input type="text" id="paperTitle" required><br><br>
+<style>
 
-  <label for="presenterName">Presenter Name:</label><br>
-  <input type="text" id="presenterName" required><br><br>
+body{
+    font-family: Arial, sans-serif;
+    max-width:800px;
+    margin:40px auto;
+    padding:20px;
+}
 
-  <label for="affiliation">Affiliation:</label><br> <input type="text" id="affiliation" required><br><br>
+label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
 
-  <label for="emailAddress">Email Address:</label><br>
-  <input type="email" id="emailAddress" required><br><br>
+input,
+select{
+    width:100%;
+    padding:8px;
+    margin-top:5px;
+}
 
-  <label for="phoneNumber">Phone Number (e.g. 011xxxxxxxx):</label><br>
-  <input type="text" id="phoneNumber" required><br><br> <label for="category">Category:</label><br>
-  <select id="category">
-    <option value="Student-Online Presenter">Student-Online Presenter</option>
-    <option value="Student-Onsite Presenter">Student-Onsite Presenter</option>
-    <option value="Professional-Online Presenter">Professional-Online Presenter</option>
-    <option value="Professional-Onsite Presenter">Professional-Onsite Presenter</option>
-    <option value="Attendee (Without Paper) - Online">Attendee (Without Paper) - Online</option>
-    <option value="Attendee (Without Paper) - Onsite">Attendee (Without Paper) - Onsite</option>
-  </select><br><br>
+button{
+    margin-top:20px;
+    padding:10px 20px;
+    cursor:pointer;
+}
 
-  <label for="payment">Payment:</label><br>
-  <input type="text" id="payment" required><br><br>
+#result{
+    margin-top:20px;
+    font-weight:bold;
+}
 
-  <label for="paymentProof">Payment Proof:</label><br>
-  <input type="file" id="paymentProof" required><br><br> <button type="submit">Register Now</button>
+</style>
+
+</head>
+<body>
+
+<h1>Conference Registration Test Form</h1>
+
+<form id="conferenceForm">
+
+    <label>Paper ID</label>
+    <input type="text" name="paperID" required>
+
+    <label>Paper Title</label>
+    <input type="text" name="paperTitle" required>
+
+    <label>Presenter Name</label>
+    <input type="text" name="presenterName" required>
+
+    <label>Affiliation</label>
+    <input type="text" name="affiliation" required>
+
+    <label>Email Address</label>
+    <input type="email" name="emailAddress" required>
+
+    <label>Phone Number</label>
+    <input type="text" name="phoneNumber">
+
+    <label>Category</label>
+    <select name="category">
+        <option value="Student">Student</option>
+        <option value="Academic">Academic</option>
+        <option value="Industry">Industry</option>
+    </select>
+
+    <label>Payment Amount</label>
+    <input type="text" name="payment">
+
+    <label>Receipt Upload</label>
+    <input
+        type="file"
+        id="receiptFile"
+        accept=".pdf,.jpg,.jpeg,.png"
+    >
+
+    <button type="submit">
+        Submit Registration
+    </button>
+
 </form>
 
-<div id="responseMessage"></div>
+<div id="result"></div>
 
 <script>
-document.getElementById('registrationForm').addEventListener('submit', function(e) {
-  e.preventDefault(); 
-  
-  const msgDiv = document.getElementById('responseMessage');
-  msgDiv.innerText = "Submitting registration and file...";
 
-  const fileInput = document.getElementById('paymentProof');
-  
-  // Prepare base structure for payload
-  const formData = {
-    paperID: document.getElementById('paperID').value,
-    paperTitle: document.getElementById('paperTitle').value,
-    presenterName: document.getElementById('presenterName').value,
-    affiliation: document.getElementById('affiliation').value,
-    emailAddress: document.getElementById('emailAddress').value,
-    phoneNumber: document.getElementById('phoneNumber').value,
-    category: document.getElementById('category').value,
-    payment: document.getElementById('payment').value,
-    fileData: null,
-    fileName: null,
-    fileMimeType: null
-  };
+const SCRIPT_URL =
+'https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_ID_HERE/exec';
 
-  const webAppUrl = "https://script.google.com/macros/s/AKfycbzsrM73cQL7jDj1hcw8nNjk5uG5kYuLmWr502__E3xJSScDbhzbRcfvegAh6hQUe9JvqA/exec";
+document
+.getElementById('conferenceForm')
+.addEventListener('submit', async function(e){
 
-  // Function to submit data to Google
-  function sendData(payload) {
-    fetch(webAppUrl, {
-      method: 'POST',
-      mode: 'no-cors', 
-      cache: 'no-cache',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    .then(response => {
-      msgDiv.innerText = "Registration & Receipt Upload Successful!";
-      document.getElementById('registrationForm').reset();
-    })
-    .catch(error => {
-      msgDiv.innerText = "Error submitting registration. Please try again.";
-      console.error('Error:', error);
-    });
-  }
+    e.preventDefault();
 
-  // Check if a file was selected by user
-  if (fileInput.files.length > 0) {
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    
-    // Read the file structure and convert it to Base64 format
-    reader.onload = function(e) {
-      const rawLog = e.target.result;
-      formData.fileData = rawLog.substr(rawLog.indexOf(',') + 1); // Extract base64 text string
-      formData.fileName = file.name;
-      formData.fileMimeType = file.type;
-      
-      // Fire fetch after file completes encoding conversion
-      sendData(formData);
-    };
-    
-    reader.readAsDataURL(file);
-  } else {
-    // If no file, just send textual fields directly
-    sendData(formData);
-  }
+    const resultDiv =
+        document.getElementById('result');
+
+    resultDiv.innerHTML = 'Submitting...';
+
+    try{
+
+        const fileInput =
+            document.getElementById('receiptFile');
+
+        const file =
+            fileInput.files[0];
+
+        let fileData = '';
+        let fileName = '';
+        let fileMimeType = '';
+
+        if(file){
+
+            const base64 =
+                await convertToBase64(file);
+
+            fileData =
+                base64.split(',')[1];
+
+            fileName =
+                file.name;
+
+            fileMimeType =
+                file.type;
+        }
+
+        const payload = {
+
+            paperID:
+                document.querySelector('[name="paperID"]').value,
+
+            paperTitle:
+                document.querySelector('[name="paperTitle"]').value,
+
+            presenterName:
+                document.querySelector('[name="presenterName"]').value,
+
+            affiliation:
+                document.querySelector('[name="affiliation"]').value,
+
+            emailAddress:
+                document.querySelector('[name="emailAddress"]').value,
+
+            phoneNumber:
+                document.querySelector('[name="phoneNumber"]').value,
+
+            category:
+                document.querySelector('[name="category"]').value,
+
+            payment:
+                document.querySelector('[name="payment"]').value,
+
+            fileData:
+                fileData,
+
+            fileName:
+                fileName,
+
+            fileMimeType:
+                fileMimeType
+        };
+
+        const response =
+            await fetch(
+                SCRIPT_URL,
+                {
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json'
+                    },
+                    body:JSON.stringify(payload)
+                }
+            );
+
+        const result =
+            await response.json();
+
+        console.log(result);
+
+        if(result.status === 'success'){
+
+            resultDiv.innerHTML =
+                '✅ Registration submitted successfully';
+
+            document
+                .getElementById('conferenceForm')
+                .reset();
+
+        }else{
+
+            resultDiv.innerHTML =
+                '❌ Error: ' + result.message;
+        }
+
+    }catch(error){
+
+        console.error(error);
+
+        resultDiv.innerHTML =
+            '❌ Failed: ' + error.message;
+    }
+
 });
+
+function convertToBase64(file){
+
+    return new Promise((resolve,reject)=>{
+
+        const reader =
+            new FileReader();
+
+        reader.readAsDataURL(file);
+
+        reader.onload =
+            ()=>resolve(reader.result);
+
+        reader.onerror =
+            error=>reject(error);
+
+    });
+
+}
+
 </script>
+
+</body>
+</html>
