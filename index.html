@@ -1,123 +1,331 @@
-<script>
-const SCRIPT_URL =
-'https://script.google.com/macros/s/AKfycbyqpeb1eKUrocn6t-w7nMksVBkLgKAqsHt2dxr95vwUQxxLsCoT7DrXF5KUXMBehUEGmA/exec';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Conference Registration</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-document
-.getElementById('conferenceForm')
-.addEventListener('submit', async function(e){
-
-    e.preventDefault();
-
-    const resultDiv =
-        document.getElementById('result');
-
-    resultDiv.innerHTML = 'Submitting...';
-
-    try {
-
-        const fileInput =
-            document.getElementById('receiptFile');
-
-        const file =
-            fileInput.files[0];
-
-        let fileData = '';
-        let fileName = '';
-        let fileMimeType = '';
-
-        if (file) {
-
-            const base64 =
-                await convertToBase64(file);
-
-            fileData =
-                base64.split(',')[1];
-
-            fileName =
-                file.name;
-
-            fileMimeType =
-                file.type;
-        }
-
-        const payload = {
-
-            paperID:
-                document.querySelector('[name="paperID"]').value,
-
-            paperTitle:
-                document.querySelector('[name="paperTitle"]').value,
-
-            presenterName:
-                document.querySelector('[name="presenterName"]').value,
-
-            affiliation:
-                document.querySelector('[name="affiliation"]').value,
-
-            emailAddress:
-                document.querySelector('[name="emailAddress"]').value,
-
-            phoneNumber:
-                document.querySelector('[name="phoneNumber"]').value,
-
-            category:
-                document.querySelector('[name="category"]').value,
-
-            payment:
-                document.querySelector('[name="payment"]').value,
-
-            fileData:
-                fileData,
-
-            fileName:
-                fileName,
-
-            fileMimeType:
-                fileMimeType
-        };
-
-        await fetch(
-            SCRIPT_URL,
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            }
-        );
-
-        resultDiv.innerHTML =
-            '✅ Submission sent. Please check Google Sheet.';
-
-        document
-            .getElementById('conferenceForm')
-            .reset();
-
-    } catch (error) {
-
-        console.error(error);
-
-        resultDiv.innerHTML =
-            '❌ Error: ' + error.message;
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px;
     }
 
-});
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 620px;
+    }
 
-function convertToBase64(file) {
+    .card-header {
+      margin-bottom: 28px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 20px;
+    }
 
+    .card-header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a365d;
+      letter-spacing: -0.3px;
+    }
+
+    .card-header p {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      color: #718096;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a5568;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    label .required {
+      color: #e53e3e;
+      margin-left: 2px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="file"],
+    select {
+      padding: 10px 12px;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 7px;
+      font-size: 0.95rem;
+      color: #2d3748;
+      background: #f7fafc;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus, select:focus {
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49,130,206,0.15);
+      background: #fff;
+    }
+
+    input[type="file"] {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .file-hint {
+      font-size: 0.78rem;
+      color: #a0aec0;
+      margin-top: 2px;
+    }
+
+    .submit-btn {
+      margin-top: 26px;
+      width: 100%;
+      padding: 13px;
+      background: #2b6cb0;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.2px;
+    }
+
+    .submit-btn:hover { background: #2c5282; }
+    .submit-btn:active { transform: scale(0.99); }
+    .submit-btn:disabled { background: #90cdf4; cursor: not-allowed; }
+
+    #result {
+      margin-top: 18px;
+      padding: 13px 16px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      display: none;
+    }
+
+    #result.success {
+      background: #f0fff4;
+      border: 1.5px solid #68d391;
+      color: #276749;
+      display: block;
+    }
+
+    #result.error {
+      background: #fff5f5;
+      border: 1.5px solid #fc8181;
+      color: #c53030;
+      display: block;
+    }
+
+    #result.info {
+      background: #ebf8ff;
+      border: 1.5px solid #63b3ed;
+      color: #2b6cb0;
+      display: block;
+    }
+
+    @media (max-width: 520px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      .card { padding: 28px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <h1>📋 Conference Registration</h1>
+    <p>Complete all fields and attach your payment receipt to submit.</p>
+  </div>
+
+  <!-- Hidden iframe to capture form POST silently (CORS fix) -->
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+  <form id="conferenceForm">
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Paper ID <span class="required">*</span></label>
+        <input type="text" name="paperID" placeholder="e.g. CONF-2025-001" required />
+      </div>
+
+      <div class="form-group">
+        <label>Category <span class="required">*</span></label>
+        <select name="category" required>
+          <option value="" disabled selected>Select category</option>
+          <option value="student">Student</option>
+          <option value="regular">Regular</option>
+          <option value="virtual">Virtual</option>
+          <option value="listener">Listener</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label>Paper Title <span class="required">*</span></label>
+        <input type="text" name="paperTitle" placeholder="Full title of your paper" required />
+      </div>
+
+      <div class="form-group">
+        <label>Presenter Name <span class="required">*</span></label>
+        <input type="text" name="presenterName" placeholder="Full name" required />
+      </div>
+
+      <div class="form-group">
+        <label>Affiliation <span class="required">*</span></label>
+        <input type="text" name="affiliation" placeholder="University / Institution" required />
+      </div>
+
+      <div class="form-group">
+        <label>Email Address <span class="required">*</span></label>
+        <input type="email" name="emailAddress" placeholder="you@example.com" required />
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" name="phoneNumber" placeholder="+60 12-345 6789" />
+      </div>
+
+      <div class="form-group full">
+        <label>Payment Method <span class="required">*</span></label>
+        <select name="payment" required>
+          <option value="" disabled selected>Select payment method</option>
+          <option value="bank_transfer">Bank Transfer</option>
+          <option value="credit_card">Credit / Debit Card</option>
+          <option value="paypal">PayPal</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label>Payment Receipt</label>
+        <input type="file" id="receiptFile" name="receiptFile" accept=".jpg,.jpeg,.png,.pdf" />
+        <span class="file-hint">Accepted: JPG, PNG, PDF — max 5 MB</span>
+      </div>
+
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">Submit Registration</button>
+    <div id="result"></div>
+  </form>
+</div>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqpeb1eKUrocn6t-w7nMksVBkLgKAqsHt2dxr95vwUQxxLsCoT7DrXF5KUXMBehUEGmA/exec';
+
+  function setResult(msg, type) {
+    const el = document.getElementById('result');
+    el.textContent = msg;
+    el.className = type; // 'success' | 'error' | 'info'
+  }
+
+  function convertToBase64(file) {
     return new Promise((resolve, reject) => {
-
-        const reader =
-            new FileReader();
-
-        reader.readAsDataURL(file);
-
-        reader.onload =
-            () => resolve(reader.result);
-
-        reader.onerror =
-            error => reject(error);
-
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = err => reject(err);
     });
+  }
 
-}
+  document.getElementById('conferenceForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    setResult('⏳ Sending your registration…', 'info');
+
+    try {
+      // --- Build file payload ---
+      const fileInput = document.getElementById('receiptFile');
+      const file = fileInput.files[0];
+      let fileData = '', fileName = '', fileMimeType = '';
+
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          setResult('❌ File is too large. Please upload a file under 5 MB.', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Submit Registration';
+          return;
+        }
+        const base64 = await convertToBase64(file);
+        fileData     = base64.split(',')[1];
+        fileName     = file.name;
+        fileMimeType = file.type;
+      }
+
+      // --- Collect form data ---
+      const payload = {
+        paperID      : document.querySelector('[name="paperID"]').value.trim(),
+        paperTitle   : document.querySelector('[name="paperTitle"]').value.trim(),
+        presenterName: document.querySelector('[name="presenterName"]').value.trim(),
+        affiliation  : document.querySelector('[name="affiliation"]').value.trim(),
+        emailAddress : document.querySelector('[name="emailAddress"]').value.trim(),
+        phoneNumber  : document.querySelector('[name="phoneNumber"]').value.trim(),
+        category     : document.querySelector('[name="category"]').value,
+        payment      : document.querySelector('[name="payment"]').value,
+        fileData,
+        fileName,
+        fileMimeType
+      };
+
+      // --- CORS-safe submission via no-cors fetch ---
+      // We use no-cors so the browser doesn't block the request.
+      // The response will be opaque (unreadable), which is expected.
+      await fetch(SCRIPT_URL, {
+        method : 'POST',
+        mode   : 'no-cors',          // ← prevents CORS preflight block
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify(payload)
+      });
+
+      // Because the response is opaque we can't confirm server success,
+      // but the request has been sent. Advise user to verify in the Sheet.
+      setResult('✅ Registration submitted! Please check the Google Sheet to confirm your entry was recorded.', 'success');
+      document.getElementById('conferenceForm').reset();
+
+    } catch (error) {
+      console.error('Submission error:', error);
+      setResult('❌ Submission failed: ' + error.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Registration';
+    }
+  });
 </script>
+
+</body>
+</html>
