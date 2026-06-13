@@ -1,96 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Conference Registration Test</title>
-
-<style>
-
-body{
-    font-family: Arial, sans-serif;
-    max-width:800px;
-    margin:40px auto;
-    padding:20px;
-}
-
-label{
-    display:block;
-    margin-top:15px;
-    font-weight:bold;
-}
-
-input,
-select{
-    width:100%;
-    padding:8px;
-    margin-top:5px;
-}
-
-button{
-    margin-top:20px;
-    padding:10px 20px;
-    cursor:pointer;
-}
-
-#result{
-    margin-top:20px;
-    font-weight:bold;
-}
-
-</style>
-
-</head>
-<body>
-
-<h1>Conference Registration Test Form</h1>
-
-<form id="conferenceForm">
-
-    <label>Paper ID</label>
-    <input type="text" name="paperID" required>
-
-    <label>Paper Title</label>
-    <input type="text" name="paperTitle" required>
-
-    <label>Presenter Name</label>
-    <input type="text" name="presenterName" required>
-
-    <label>Affiliation</label>
-    <input type="text" name="affiliation" required>
-
-    <label>Email Address</label>
-    <input type="email" name="emailAddress" required>
-
-    <label>Phone Number</label>
-    <input type="text" name="phoneNumber">
-
-    <label>Category</label>
-    <select name="category">
-        <option value="Student">Student</option>
-        <option value="Academic">Academic</option>
-        <option value="Industry">Industry</option>
-    </select>
-
-    <label>Payment Amount</label>
-    <input type="text" name="payment">
-
-    <label>Receipt Upload</label>
-    <input
-        type="file"
-        id="receiptFile"
-        accept=".pdf,.jpg,.jpeg,.png"
-    >
-
-    <button type="submit">
-        Submit Registration
-    </button>
-
-</form>
-
-<div id="result"></div>
-
 <script>
-
 const SCRIPT_URL =
 'https://script.google.com/macros/s/AKfycbyqpeb1eKUrocn6t-w7nMksVBkLgKAqsHt2dxr95vwUQxxLsCoT7DrXF5KUXMBehUEGmA/exec';
 
@@ -105,7 +13,7 @@ document
 
     resultDiv.innerHTML = 'Submitting...';
 
-    try{
+    try {
 
         const fileInput =
             document.getElementById('receiptFile');
@@ -117,7 +25,7 @@ document
         let fileName = '';
         let fileMimeType = '';
 
-        if(file){
+        if (file) {
 
             const base64 =
                 await convertToBase64(file);
@@ -168,51 +76,35 @@ document
                 fileMimeType
         };
 
-        const response =
-            await fetch(
-                SCRIPT_URL,
-                {
-                    method:'POST',
-                    headers:{
-                        'Content-Type':'application/json'
-                    },
-                    body:JSON.stringify(payload)
-                }
-            );
+        await fetch(
+            SCRIPT_URL,
+            {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload)
+            }
+        );
 
-        const result =
-            await response.json();
+        resultDiv.innerHTML =
+            '✅ Submission sent. Please check Google Sheet.';
 
-        console.log(result);
+        document
+            .getElementById('conferenceForm')
+            .reset();
 
-        if(result.status === 'success'){
-
-            resultDiv.innerHTML =
-                '✅ Registration submitted successfully';
-
-            document
-                .getElementById('conferenceForm')
-                .reset();
-
-        }else{
-
-            resultDiv.innerHTML =
-                '❌ Error: ' + result.message;
-        }
-
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
         resultDiv.innerHTML =
-            '❌ Failed: ' + error.message;
+            '❌ Error: ' + error.message;
     }
 
 });
 
-function convertToBase64(file){
+function convertToBase64(file) {
 
-    return new Promise((resolve,reject)=>{
+    return new Promise((resolve, reject) => {
 
         const reader =
             new FileReader();
@@ -220,16 +112,12 @@ function convertToBase64(file){
         reader.readAsDataURL(file);
 
         reader.onload =
-            ()=>resolve(reader.result);
+            () => resolve(reader.result);
 
         reader.onerror =
-            error=>reject(error);
+            error => reject(error);
 
     });
 
 }
-
 </script>
-
-</body>
-</html>
