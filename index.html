@@ -1,0 +1,53 @@
+<form id="registrationForm">
+  <label for="fullName">Full Name:</label><br>
+  <input type="text" id="fullName" required><br><br>
+
+  <label for="emailAddress">Email Address:</label><br>
+  <input type="email" id="emailAddress" required><br><br>
+
+  <label for="programName">Program Select:</label><br>
+  <select id="programName">
+    <option value="Web Development 101">Web Development 101</option>
+    <option value="Data Science Basics">Data Science Basics</option>
+  </select><br><br>
+
+  <button type="submit">Register Now</button>
+</form>
+
+<div id="responseMessage"></div>
+
+<script>
+document.getElementById('registrationForm').addEventListener('submit', function(e) {
+  e.preventDefault(); // Stop the page from refreshing
+  
+  const msgDiv = document.getElementById('responseMessage');
+  msgDiv.innerText = "Submitting...";
+
+  // 1. Prepare the data payload
+  const formData = {
+    fullName: document.getElementById('fullName').value,
+    emailAddress: document.getElementById('emailAddress').value,
+    programName: document.getElementById('programName').value
+  };
+
+  // 2. YOUR GOOGLE WEB APP URL HERE
+  const webAppUrl = 'https://script.google.com/macros/s/AKfycbzPJJ1x1bKd_hqTOvbZfse5AdvRKW3ib1aDjDMSxkuarHAdkCLU4Z8H1wo_TebBbk3F_A/exec';
+
+  // 3. Send the data to Google Sheets via Apps Script
+  fetch(webAppUrl, {
+    method: 'POST',
+    mode: 'no-cors', // Essential for cross-domain Google Script requests
+    cache: 'no-cache',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData)
+  })
+  .then(response => {
+    msgDiv.innerText = "Registration Successful! See you there.";
+    document.getElementById('registrationForm').reset();
+  })
+  .catch(error => {
+    msgDiv.innerText = "Error submitting registration. Please try again.";
+    console.error('Error:', error);
+  });
+});
+</script>
