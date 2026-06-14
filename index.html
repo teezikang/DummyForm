@@ -1,96 +1,1020 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Google Drive File Upload</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conference Registration Portal</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-gradient-1: #090d16;
+            --accent-primary: #818cf8;
+            --accent-secondary: #c084fc;
+            --accent-glow: rgba(129, 140, 248, 0.15);
+            --card-bg: rgba(30, 41, 59, 0.55);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #34d399;
+            --error: #f87171;
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --input-border: rgba(255, 255, 255, 0.1);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 15% 20%, rgba(139, 92, 246, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 45%),
+                var(--bg-gradient-1);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 48px 16px;
+        }
+
+        .glow-orb {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 660px;
+            z-index: 10;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 30%, var(--accent-primary) 70%, var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5),
+                inset 0 1px 1px rgba(255, 255, 255, 0.08);
+        }
+
+        /* Settings panel */
+        .settings-panel {
+            margin-bottom: 1.5rem;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .settings-content {
+            display: none;
+            margin-top: 0.75rem;
+        }
+
+        .settings-panel.active .settings-content {
+            display: block;
+        }
+
+        .settings-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--accent-primary);
+            margin-bottom: 0.35rem;
+        }
+
+        .cors-modes {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .cors-option {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .cors-option input[type="radio"] {
+            cursor: pointer;
+            accent-color: var(--accent-primary);
+        }
+
+        /* Form styling */
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            margin-top: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .section-label:first-child {
+            margin-top: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        label .req {
+            color: var(--error);
+            margin-left: 2px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 9px;
+            padding: 0.72rem 0.95rem;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.85rem center;
+            padding-right: 2.5rem;
+            cursor: pointer;
+        }
+
+        select option {
+            background: #1e293b;
+            color: var(--text-main);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+            background: rgba(15, 23, 42, 0.85);
+        }
+
+        input::placeholder {
+            color: rgba(148, 163, 184, 0.45);
+        }
+
+        /* File upload dropzone */
+        .dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.25s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: var(--accent-primary);
+            background: rgba(129, 140, 248, 0.05);
+        }
+
+        .dropzone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dropzone-icon {
+            color: var(--accent-primary);
+            margin-bottom: 0.25rem;
+            transition: transform 0.25s ease;
+        }
+
+        .dropzone:hover .dropzone-icon {
+            transform: translateY(-4px);
+            color: var(--accent-secondary);
+        }
+
+        .dropzone h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .dropzone p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Selected file pill */
+        .file-selected {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(129, 140, 248, 0.08);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .file-selected.visible {
+            display: flex;
+        }
+
+        .file-selected svg {
+            color: var(--accent-secondary);
+            flex-shrink: 0;
+        }
+
+        .file-selected-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-selected-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-selected-size {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        .file-clear {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+            border-radius: 4px;
+            line-height: 0;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .file-clear:hover {
+            color: var(--error);
+        }
+
+        /* Submit button */
+        .submit-btn {
+            margin-top: 2rem;
+            width: 100%;
+            padding: 0.95rem;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #6366f1 100%);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 11px;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
+        }
+
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Status alert */
+        .status-alert {
+            margin-top: 1.25rem;
+            border-radius: 11px;
+            padding: 0.9rem 1rem;
+            font-size: 0.88rem;
+            display: none;
+            align-items: flex-start;
+            gap: 0.65rem;
+            line-height: 1.5;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-alert.success {
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.25);
+            color: #a7f3d0;
+            display: flex;
+        }
+
+        .status-alert.error {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+            color: #fca5a5;
+            display: flex;
+        }
+
+        .status-alert.info {
+            background: rgba(129, 140, 248, 0.1);
+            border: 1px solid rgba(129, 140, 248, 0.25);
+            color: #c7d2fe;
+            display: flex;
+        }
+
+        .status-alert svg {
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .status-alert a {
+            color: #818cf8;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        footer {
+            margin-top: 1.75rem;
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 520px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: 1;
+            }
+
+            .card {
+                padding: 1.75rem 1.25rem;
+            }
+
+            header h1 {
+                font-size: 1.9rem;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="drive-uploader-container" style="padding:20px; background:#f9f9f9; border:1px solid #ddd; border-radius:5px; max-width:500px;">
-  <h3>Upload Your File</h3>
+    <div class="glow-orb"></div>
 
-  <form id="uploadForm">
-    <div style="margin-bottom:15px;">
-      <input type="file" id="fileInput" required style="display:block; width:100%;">
+    <div class="container">
+        <header>
+            <h1>📋 Register</h1>
+            <p>Fill out the registration details and attach your receipt to submit.</p>
+        </header>
+
+        <div class="card">
+            <!-- Settings panel for easy setup within WordPress / Divi -->
+            <div class="settings-panel" id="settingsPanel">
+                <div class="settings-header" onclick="toggleSettings()">
+                    <span>🔧 Connection Setup & CORS Settings</span>
+                    <span id="settingsArrow">▼</span>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-group">
+                        <label for="scriptUrl">Google Apps Script Web App URL</label>
+                        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+                    </div>
+                    <div class="settings-group">
+                        <label>CORS Policy Mode</label>
+                        <div class="cors-modes">
+                            <label class="cors-option">
+                                <input type="radio" name="corsMode" value="no-cors" checked>
+                                <span>Bypass CORS (no-cors)</span>
+                            </label>
+                            <label class="cors-option">
+                                <input type="radio" name="corsMode" value="cors">
+                                <span>Standard CORS (cors)</span>
+                            </label>
+                        </div>
+                        <span style="font-size: 0.74rem; color: var(--text-muted); display: block; margin-top: 0.35rem; line-height: 1.3;">
+                            Use <strong>Bypass CORS</strong> for testing from local files, GitHub Pages, or inside WordPress/Divi Builder previews. Switch to <strong>Standard CORS</strong> if you need to read the direct file URL returned from the server (requires correct backend CORS configurations).
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div id="conferenceForm">
+                <!-- Paper Info -->
+                <div class="section-label">Paper Details</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="paperID">Paper ID <span class="req">*</span></label>
+                        <input type="text" id="paperID" placeholder="e.g. CONF-2025-001" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category <span class="req">*</span></label>
+                        <select id="category" required>
+                            <option value="" disabled selected>Select category</option>
+                            <option value="student">Student</option>
+                            <option value="regular">Regular</option>
+                            <option value="virtual">Virtual</option>
+                            <option value="listener">Listener</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <label for="paperTitle">Paper Title <span class="req">*</span></label>
+                        <input type="text" id="paperTitle" placeholder="Full title of your paper" required />
+                    </div>
+                </div>
+
+                <!-- Presenter Info -->
+                <div class="section-label">Presenter Info</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="presenterName">Full Name <span class="req">*</span></label>
+                        <input type="text" id="presenterName" placeholder="Full name" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="affiliation">Affiliation <span class="req">*</span></label>
+                        <input type="text" id="affiliation" placeholder="University / Institution" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="emailAddress">Email Address <span class="req">*</span></label>
+                        <input type="email" id="emailAddress" placeholder="you@example.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber" placeholder="+60 12-345 6789" />
+                    </div>
+                </div>
+
+                <!-- Payment -->
+                <div class="section-label">Payment</div>
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label for="payment">Payment Method <span class="req">*</span></label>
+                        <select id="payment" required>
+                            <option value="" disabled selected>Select payment method</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="credit_card">Credit / Debit Card</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <label>Payment Receipt</label>
+                        <div class="dropzone" id="dropzone">
+                            <input type="file" id="receiptFile" accept=".jpg,.jpeg,.png,.pdf" />
+                            <div class="dropzone-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                            </div>
+                            <h3>Drag & drop receipt here</h3>
+                            <p>JPG, PNG, or PDF — max 5 MB</p>
+                        </div>
+                        <!-- File selected pill -->
+                        <div class="file-selected" id="fileSelectedPill">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            <div class="file-selected-meta">
+                                <div class="file-selected-name" id="fileSelectedName"></div>
+                                <div class="file-selected-size" id="fileSelectedSize"></div>
+                            </div>
+                            <button class="file-clear" id="fileClearBtn" title="Remove file">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="submit-btn" id="submitBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                    </svg>
+                    Submit Registration
+                </button>
+
+                <div class="status-alert" id="statusAlert"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Having trouble? Contact <a href="mailto:support@conference.org">support@conference.org</a></p>
+        </footer>
     </div>
 
-    <button type="submit" id="submitBtn"
-      style="background:#7c1dc2; color:#fff; border:none; padding:10px 20px; border-radius:3px; cursor:pointer;">
-      Submit to Drive
-    </button>
-  </form>
+    <script>
+        // ── Settings Panel & LocalStorage ─────────────────────────────
+        const panel = document.getElementById('settingsPanel');
+        const arrow = document.getElementById('settingsArrow');
+        const scriptUrlInput = document.getElementById('scriptUrl');
 
-  <div id="uploadStatus" style="margin-top:15px; font-weight:bold;"></div>
-</div>
+        function toggleSettings() {
+            panel.classList.toggle('active');
+            arrow.textContent = panel.classList.contains('active') ? '▲' : '▼';
+        }
 
-<script>
-document.getElementById('uploadForm').addEventListener('submit', function (e) {
-  e.preventDefault();
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = localStorage.getItem('gas_web_app_url');
+            if (savedUrl) {
+                scriptUrlInput.value = savedUrl;
+            } else {
+                panel.classList.add('active');
+                arrow.textContent = '▲';
+            }
 
-  // Replace with your deployed GAS Web App URL
-  const webAppUrl = "https://script.google.com/macros/s/AKfycbxLR7ZjdhYj-HHDwp8acCeVIxnv6ofH3oDD0exKTEyiwHM_ONV4ECMbg6vM1jLfxMKB/exec";
+            const savedCors = localStorage.getItem('gas_cors_mode');
+            if (savedCors) {
+                const radio = document.querySelector(`input[name="corsMode"][value="${savedCors}"]`);
+                if (radio) radio.checked = true;
+            }
+        });
 
-  const fileInput = document.getElementById('fileInput');
-  const statusDiv = document.getElementById('uploadStatus');
-  const submitBtn = document.getElementById('submitBtn');
+        scriptUrlInput.addEventListener('input', () => {
+            localStorage.setItem('gas_web_app_url', scriptUrlInput.value.trim());
+        });
 
-  if (fileInput.files.length === 0) {
-    statusDiv.style.color = "red";
-    statusDiv.innerHTML = "Please select a file first.";
-    return;
-  }
+        document.querySelectorAll('input[name="corsMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                localStorage.setItem('gas_cors_mode', e.target.value);
+            });
+        });
 
-  const file = fileInput.files[0];
-  const reader = new FileReader();
+        // ── File upload / dropzone ─────────────────────────────────────
+        let selectedFile = null;
 
-  statusDiv.style.color = "#333";
-  statusDiv.innerHTML = "Processing file... please wait.";
-  submitBtn.disabled = true;
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('receiptFile');
+        const fileSelectedPill = document.getElementById('fileSelectedPill');
+        const fileSelectedName = document.getElementById('fileSelectedName');
+        const fileSelectedSize = document.getElementById('fileSelectedSize');
+        const fileClearBtn = document.getElementById('fileClearBtn');
 
-  reader.onload = function (event) {
-    const base64String = event.target.result.split(',')[1];
+        // Drag styling
+        ['dragenter', 'dragover'].forEach(name => {
+            dropzone.addEventListener(name, e => {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+        });
+        ['dragleave', 'drop'].forEach(name => {
+            dropzone.addEventListener(name, e => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+            });
+        });
 
-    const payload = {
-      filename: file.name,
-      mimeType: file.type,
-      base64Data: base64String
-    };
+        dropzone.addEventListener('drop', e => {
+            const files = e.dataTransfer.files;
+            if (files.length) handleFileSelect(files[0]);
+        });
 
-    fetch(webAppUrl, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
+        fileInput.addEventListener('change', e => {
+            if (e.target.files.length) handleFileSelect(e.target.files[0]);
+        });
+
+        function handleFileSelect(file) {
+            selectedFile = file;
+            fileSelectedName.textContent = file.name;
+            fileSelectedSize.textContent = formatBytes(file.size);
+            fileSelectedPill.classList.add('visible');
+            dropzone.style.opacity = '0.4';
+            dropzone.style.pointerEvents = 'none';
+        }
+
+        fileClearBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileSelectedPill.classList.remove('visible');
+            dropzone.style.opacity = '';
+            dropzone.style.pointerEvents = '';
+        });
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024, sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // ── Status Messages ──────────────────────────────────────────
+        function setAlert(type, message) {
+            const el = document.getElementById('statusAlert');
+            const icons = {
+                success: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                error: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+                info: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
+            };
+            el.className = `status-alert ${type}`;
+            el.innerHTML = `${icons[type] || ''}<span>${message}</span>`;
+            el.style.display = 'flex';
+        }
+
+        // ── Helper inputs val ──────────────────────────────────────────
+        function getVal(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function validateForm() {
+            const required = ['paperID', 'category', 'paperTitle', 'presenterName', 'affiliation', 'emailAddress', 'payment'];
+            for (const id of required) {
+                const el = document.getElementById(id);
+                if (!el.value.trim()) {
+                    el.focus();
+                    setAlert('error', `Please fill out the "${el.previousElementSibling.textContent.replace(' *', '')}" field.`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = err => reject(err);
+            });
+        }
+
+        // ── Form submission handler ────────────────────────────────────
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            if (!validateForm()) return;
+
+            const url = scriptUrlInput.value.trim();
+            if (!url) {
+                if (!panel.classList.contains('active')) toggleSettings();
+                scriptUrlInput.focus();
+                setAlert('error', 'Please configure your Google Apps Script Web App URL first.');
+                return;
+            }
+
+            if (!url.endsWith('/exec')) {
+                if (!panel.classList.contains('active')) toggleSettings();
+                scriptUrlInput.focus();
+                setAlert('error', 'Invalid Google Apps Script URL. The Web App URL must end with "/exec".');
+                return;
+            }
+
+            const corsMode = document.querySelector('input[name="corsMode"]:checked').value;
+            const btn = document.getElementById('submitBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Submitting…`;
+            setAlert('info', 'Sending registration details, please wait…');
+
+            let fileData = '', fileName = '', fileMimeType = '';
+            if (selectedFile) {
+                if (selectedFile.size > 5 * 1024 * 1024) {
+                    setAlert('error', 'Receipt file size is too large. Max limit is 5 MB.');
+                    btn.disabled = false;
+                    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Registration`;
+                    return;
+                }
+                try {
+                    const base64Full = await toBase64(selectedFile);
+                    fileData = base64Full.split(',')[1]; // Strip base64 data prefix
+                    fileName = selectedFile.name;
+                    fileMimeType = selectedFile.type;
+                } catch (err) {
+                    setAlert('error', 'Error reading uploaded file receipt.');
+                    btn.disabled = false;
+                    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Registration`;
+                    return;
+                }
+            }
+
+            const payload = {
+                paperID: getVal('paperID'),
+                category: getVal('category'),
+                paperTitle: getVal('paperTitle'),
+                presenterName: getVal('presenterName'),
+                affiliation: getVal('affiliation'),
+                emailAddress: getVal('emailAddress'),
+                phoneNumber: getVal('phoneNumber'),
+                payment: getVal('payment'),
+                fileData,
+                fileName,
+                fileMimeType
+            };
+
+            const fetchOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            };
+
+            if (corsMode === 'no-cors') {
+                fetchOptions.mode = 'no-cors';
+            } else {
+                fetchOptions.mode = 'cors';
+            }
+
+            try {
+                const response = await fetch(url, fetchOptions);
+
+                if (corsMode === 'no-cors') {
+                    // In no-cors mode, the browser hides response data from JavaScript.
+                    // Response status will be 0 and body is empty. If it resolves without throwing,
+                    // we assume successful transmission.
+                    setAlert('success', '✅ Registration details and file upload sent! (Bypassed CORS restrictions. Verification is processed on the Google Sheet side.)');
+                    resetForm();
+                } else {
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        let successMsg = `✅ Registration submitted successfully! Details recorded.`;
+                        if (result.fileUrl) {
+                            successMsg += ` <br><a href="${result.fileUrl}" target="_blank">View Uploaded Receipt ↗</a>`;
+                        }
+                        setAlert('success', successMsg);
+                        resetForm();
+                    } else {
+                        throw new Error(result.message || 'Server-side error.');
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                if (corsMode === 'cors') {
+                    setAlert('error', `❌ Submission failed: ${err.message}. If this is a CORS issue, please toggle "Bypass CORS (no-cors)" in the connection settings above.`);
+                } else {
+                    setAlert('error', `❌ Submission failed: Network connection error.`);
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Registration`;
+            }
+        });
+
+        function resetForm() {
+            ['paperID', 'paperTitle', 'presenterName', 'affiliation', 'emailAddress', 'phoneNumber'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('category').selectedIndex = 0;
+            document.getElementById('payment').selectedIndex = 0;
+            fileClearBtn.click();
+        }
+
+        // Custom Spinner keyframe
+        const style = document.createElement('style');
+        style.textContent = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+        document.head.appendChild(style);
+    </script>
+
+    <!-- 
+    GOOGLE APPS SCRIPT BACKEND REFERENCE:
+    Copy and paste the below code into your Google Apps Script file (Code.gs).
+    Make sure to deploy it as a "Web App", with:
+      - "Execute as: Me"
+      - "Who has access: Anyone"
+
+    ```javascript
+    var UPLOAD_FOLDER_ID = "YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE";
+    var SPREADSHEET_ID = "YOUR_GOOGLE_SHEET_ID_HERE"; // or SpreadsheetApp.getActiveSpreadsheet()
+
+    function doPost(e) {
+      try {
+        var payload = JSON.parse(e.postData.contents);
+        
+        // 1. FILE UPLOAD (Google Drive)
+        var base64Data = payload.fileData;
+        var fileName = payload.fileName;
+        var mimeType = payload.fileMimeType;
+        var fileUrl = "";
+        
+        if (base64Data && base64Data.trim() !== "") {
+          if (base64Data.indexOf(',') > -1) {
+            base64Data = base64Data.split(',')[1];
+          }
+          var decodedBytes = Utilities.base64Decode(base64Data);
+          var blob = Utilities.newBlob(decodedBytes, mimeType, fileName);
+          
+          var folder;
+          if (UPLOAD_FOLDER_ID && UPLOAD_FOLDER_ID.trim() !== "") {
+            folder = DriveApp.getFolderById(UPLOAD_FOLDER_ID);
+          } else {
+            folder = DriveApp.getRootFolder();
+          }
+          var file = folder.createFile(blob);
+          fileUrl = file.getUrl();
+        }
+        
+        // 2. SHEETS DATABASE RECORDING
+        var sheet;
+        if (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") {
+          sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheets()[0];
+        } else {
+          sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+        }
+        
+        // Set headers if the sheet is empty
+        if (sheet.getLastRow() === 0) {
+          sheet.appendRow([
+            "Timestamp",
+            "Paper ID",
+            "Category",
+            "Paper Title",
+            "Presenter Name",
+            "Affiliation",
+            "Email Address",
+            "Phone Number",
+            "Payment Method",
+            "Receipt Link"
+          ]);
+          sheet.getRange(1, 1, 1, 10).setFontWeight("bold").setBackground("#edf2f7");
+        }
+        
+        // Append form data
+        sheet.appendRow([
+          new Date(),
+          payload.paperID || "",
+          payload.category || "",
+          payload.paperTitle || "",
+          payload.presenterName || "",
+          payload.affiliation || "",
+          payload.emailAddress || "",
+          payload.phoneNumber || "",
+          payload.payment || "",
+          fileUrl
+        ]);
+        
+        return ContentService.createTextOutput(JSON.stringify({
+          status: 'success',
+          message: 'Registration recorded successfully!',
+          fileUrl: fileUrl
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+        
+      } catch (error) {
+        return ContentService.createTextOutput(JSON.stringify({
+          status: 'error',
+          message: error.toString()
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
       }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === "success") {
-        statusDiv.style.color = "green";
-        statusDiv.innerHTML =
-          "🎉 File uploaded successfully!<br>" +
-          "File ID: " + data.fileId;
-
-        document.getElementById('uploadForm').reset();
-      } else {
-        statusDiv.style.color = "red";
-        statusDiv.innerHTML = "Error: " + data.message;
-      }
-    })
-    .catch(error => {
-      console.error(error);
-      statusDiv.style.color = "red";
-      statusDiv.innerHTML =
-        "Upload failed. Check your Web App URL and deployment settings.";
-    })
-    .finally(() => {
-      submitBtn.disabled = false;
-    });
-  };
-
-  reader.readAsDataURL(file);
-});
-</script>
-
+    }
+    ```
+    -->
 </body>
+
 </html>
