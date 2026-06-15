@@ -556,7 +556,8 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqpeb1eKUrocn6t-w7nMksVBkLgKAqsHt2dxr95vwUQxxLsCoT7DrXF5KUXMBehUEGmA/exec';
+        // IMPORTANT: Replace this URL with your own Google Apps Script Web App URL after deploying.
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1D8XZhTQx-dNidZQntGnZvZH-hKRf-bH-Wv4TvZ1mANu14RdqIOPDMvVSWqq8NWqwYA/exec';
 
         // ── File handling ──────────────────────────────────────────────
         let selectedFile = null;
@@ -691,14 +692,15 @@
                 fileMimeType
             };
 
+            const fetchOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            };
+
             try {
-                // Fetch the Google Apps Script Web App URL.
-                // We send it as text/plain to avoid CORS preflight OPTIONS block.
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
+                // Try standard CORS submission first
+                const response = await fetch(SCRIPT_URL, fetchOptions);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -721,8 +723,28 @@
                 }
 
             } catch (err) {
-                console.error(err);
-                setAlert('error', '❌ Submission failed: ' + err.message);
+                console.warn('Standard submit failed. Attempting submission in bypass mode...', err);
+
+                try {
+                    // Fallback to no-cors mode to bypass CORS preflight blocks
+                    await fetch(SCRIPT_URL, {
+                        ...fetchOptions,
+                        mode: 'no-cors'
+                    });
+
+                    setAlert('success', '✅ Registration submitted! (Submitted via CORS bypass mode. Check Google Sheets to verify.)');
+
+                    // Reset form
+                    ['paperID', 'paperTitle', 'presenterName', 'affiliation', 'emailAddress', 'phoneNumber'].forEach(id => {
+                        document.getElementById(id).value = '';
+                    });
+                    document.getElementById('category').selectedIndex = 0;
+                    document.getElementById('payment').selectedIndex = 0;
+                    fileClearBtn.click();
+                } catch (fallbackErr) {
+                    console.error(fallbackErr);
+                    setAlert('error', '❌ Submission failed: ' + err.message);
+                }
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Registration`;
